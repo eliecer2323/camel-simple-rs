@@ -1,0 +1,82 @@
+stages:
+  - configure
+  - deploy
+  - clean
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_REF_NAME ==  "development"
+      variables:
+        ENVIRONMENT_NAME: development
+        ENVIRONMENT_URL: dev.olivelabs.tech
+        ANSIBLE_PATH: development/playbook-dev-routing-system.yml
+
+    - if: $CI_COMMIT_REF_NAME == "main" 
+      variables:
+        ENVIRONMENT_NAME: production
+        ENVIRONMENT_URL: olivelabs.tech
+        ANSIBLE_PATH: production/redundant/playbook-production-routing-system.yml
+    - when: always 
+
+variables:
+  NEW_BRANCH_NAME: "deploy_${CI_PIPELINE_ID}"
+
+configure:
+  stage: configure
+  environment: $ENVIRONMENT_NAME
+  before_script:
+    - git remote set-url origin https://${CI_USER}:${CI_TOKEN}@gitlab.com/uproarcar/olive-com/tools/routing/routing-system.git
+    - git config --global user.email "jorge.sierra@olive.com"
+    - git config --global user.name "CI Pipeline"
+  script:
+    #- git checkout $CI_COMMIT_REF_NAME
+    #- git pull origin $CI_COMMIT_REF_NAME
+    - git checkout -b $NEW_BRANCH_NAME
+    - rm .gitignore
+    - mv -f $ENV_VARS src/main/resources/application.properties
+    - mv -f $NEWRELIC_KEY newrelic/newrelic.yml
+    - git add .gitignore src/main/resources/application.properties newrelic/newrelic.yml
+    - git commit -m "Automation - Added ENV_VARS for deployment"
+    - git push origin $NEW_BRANCH_NAME
+  allow_failure: false
+  only:
+    - development
+    - main
+
+deploy:
+  stage: deploy
+  environment:
+    name: $ENVIRONMENT_NAME
+    url: $ENVIRONMENT_URL
+  before_script:
+    - 'which ssh-agent || ( apt-get install -qq openssh-client )'
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
+    - mkdir -p ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - date
+  script:
+    - echo "============================"
+    - echo "Deploying on $ENVIRONMENT_NAME environment"
+    - echo "============================"
+    - echo "Deploying from branch $NEW_BRANCH_NAME"
+    - ssh gitlab@deployment.olivelabs.tech "export BRANCH=$NEW_BRANCH_NAME; ansible-playbook ansible/playbooks/$ANSIBLE_PATH -u ansible"
+  allow_failure: false
+  only:
+    - development
+    - main
+  when: manual
+
+clean:
+  stage: clean
+  environment: $ENVIRONMENT_NAME
+  before_script:
+    - git remote set-url origin https://${CI_USER}:${CI_TOKEN}@gitlab.com/uproarcar/olive-com/tools/routing/routing-system.git
+  script:
+    - git push origin --delete $NEW_BRANCH_NAME
+  only:
+    - development
+    - main
+  when: on_success
+  dependencies:
+    - deploy

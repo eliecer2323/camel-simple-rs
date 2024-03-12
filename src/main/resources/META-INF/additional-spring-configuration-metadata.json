@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "camel.component.custom.sftp",
+    "type": "java.util.Map<java.lang.String, java.lang.String>",
+    "description": "A description for 'sftp'"
+  },
+  {
+    "name": "camel.component.custom.salesforce",
+    "type": "java.util.Map<java.lang.String, java.lang.String>",
+    "description": "A description for 'salesforce'"
+  },
+  {
+    "name": "env.name",
+    "type": "java.lang.String",
+    "description": "Environment name"
+  }
+]}

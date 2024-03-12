@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.1.5</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+
+	<groupId>com.olive.integration</groupId>
+	<artifactId>routingsystem</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>routing-system</name>
+	<description>Routes for several platforms integrations</description>
+
+	<properties>
+		<java.version>17</java.version>
+		<camel.version>4.1.0</camel.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+	    </dependency>
+	    
+	    <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+		
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-spring-boot-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-ftp-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-salesforce-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+	        <groupId>org.apache.camel.springboot</groupId>
+	        <artifactId>camel-mongodb-starter</artifactId>
+	        <version>${camel.version}</version>
+	    </dependency>
+
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-rest-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-crypto-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-bindy-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.camel.springboot</groupId>
+			<artifactId>camel-jackson-starter</artifactId>
+			<version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.camel</groupId>
+		    <artifactId>camel-spring-xml</artifactId>
+		    <version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.camel.springboot</groupId>
+		    <artifactId>camel-servlet-starter</artifactId>
+		    <version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.camel.springboot</groupId>
+		    <artifactId>camel-management-starter</artifactId>
+		    <version>${camel.version}</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.apache.camel.springboot</groupId>
+		    <artifactId>camel-log-starter</artifactId>
+		    <version>${camel.version}</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>io.hawt</groupId>
+		    <artifactId>hawtio-springboot</artifactId>
+		    <version>4.0-M2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.newrelic.agent.java</groupId>
+		    <artifactId>newrelic-java</artifactId>
+		    <version>8.7.0</version>
+		    <scope>provided</scope>
+		    <type>zip</type>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>
+									${project.build.directory}/generated-sources/camel-salesforce/
+								</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.camel.maven</groupId>
+				<artifactId>camel-salesforce-maven-plugin</artifactId>
+				<version>${camel.version}</version>
+				<configuration>
+					<clientId>${camelSalesforce.clientId}</clientId>
+					<clientSecret>${camelSalesforce.clientSecret}</clientSecret>
+					<userName>${camelSalesforce.userName}</userName>
+					<password>${camelSalesforce.password}</password>
+					<loginUrl default-value="https://login.salesforce.com">
+						${camelSalesforce.loginUrl}</loginUrl>
+					<includes>
+						<include>Policy__c</include>
+					</includes>
+				</configuration>
+			</plugin>
+			
+			<!-- Unzip New Relic Java agent into target/ -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+				    <execution>
+				    <id>unpack-newrelic</id>
+				    <phase>package</phase>
+				    <goals>
+				        <goal>unpack-dependencies</goal>
+				    </goals>
+				    <configuration>
+				        <includeGroupIds>com.newrelic.agent.java</includeGroupIds>
+				        <includeArtifactIds>newrelic-java</includeArtifactIds>
+				        <!-- you can optionally exclude files -->
+				        <!-- <excludes>**/newrelic.yml</excludes> -->
+				        <overWriteReleases>false</overWriteReleases>
+				        <overWriteSnapshots>false</overWriteSnapshots>
+				        <overWriteIfNewer>true</overWriteIfNewer>
+				        <outputDirectory>${project.build.directory}</outputDirectory>
+				    </configuration>
+				    </execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
